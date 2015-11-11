@@ -335,7 +335,7 @@ int inject_code(const struct process_hook *ph)
 	/* arguments to function we call */
 	regs.rdi = regs.rsp + 1024;
 	regs.rsi = RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE;
-	regs.rip = (size_t)ph->dlopen_address + 2;// kernel bug?! always need to add 2!
+	regs.rip = (size_t)ph->dlopen_address;
 
 	if (ptrace(PTRACE_SETREGS, ph->pid, NULL, &regs) < 0)
 		die("[-] ptrace");
@@ -410,10 +410,7 @@ int inject_code(const struct process_hook *ph)
 	v = RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE;
 	poke_text(ph->pid, regs.esp + 2*sizeof(size_t), &v, sizeof(v));
 
-	/* kernel bug. always add 2; in -m32 mode on 64bit systems its
-	 * not needed!!!
-	 */
-	regs.eip = (size_t)ph->dlopen_address + 2;
+	regs.eip = (size_t)ph->dlopen_address;
 
 	if (ptrace(PTRACE_SETREGS, ph->pid, NULL, &regs) < 0)
 		die("[-] ptrace");
